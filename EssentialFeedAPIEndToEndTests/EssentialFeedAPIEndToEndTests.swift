@@ -28,7 +28,7 @@ class EssentialFeedAPIEndToEndTests: XCTestCase {
             default:
                 XCTFail("Expected success but got no result instead")
         }
-        // adda change
+        // removing change
     }
 
     //MARK:- Helpers
