@@ -60,7 +60,7 @@ class URLSessionHTTPClientTests: XCTestCase {
         
         // We can use the same mechanism to test post requests, also investigate the body of the request and also investigate query params of the request. Any request related data that we care about can be asserted through these observers without hitting the network.
         
-        URLSessionHTTPClient().get(from: url) { _ in }
+        makeSUT().get(from: url) { _ in }
         
         wait(for: [exp], timeout: 1.0)
     }
@@ -95,8 +95,7 @@ class URLSessionHTTPClientTests: XCTestCase {
         
         let exp = expectation(description: "wait for completion")
         
-        let sut = URLSessionHTTPClient()
-        sut.get(from: url) { result in
+        makeSUT().get(from: url) { result in
             switch result {
             case let .failure(receivedError as NSError):
                 XCTAssertEqual(receivedError.domain, error.domain)
@@ -111,6 +110,10 @@ class URLSessionHTTPClientTests: XCTestCase {
     }
     
     // MARK :- Helpers
+    
+    private func makeSUT() -> URLSessionHTTPClient {
+        return URLSessionHTTPClient()
+    }
 
     // when  we are subclassing URLSession and URLSessionDataTask, it is often dangerous as
     //  we do not own those classes, we do not have access to their implementations
