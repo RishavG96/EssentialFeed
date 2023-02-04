@@ -111,8 +111,20 @@ class URLSessionHTTPClientTests: XCTestCase {
     
     // MARK :- Helpers
     
-    private func makeSUT() -> URLSessionHTTPClient {
-        return URLSessionHTTPClient()
+    private func makeSUT(file: StaticString = #filePath, line: UInt = #line) -> URLSessionHTTPClient {
+        let sut = URLSessionHTTPClient()
+        trackForMemoryLeaks(sut, file: file, line: line)
+        return sut
+    }
+    
+    private func trackForMemoryLeaks(_ instance: AnyObject, file: StaticString = #filePath, line: UInt = #line) {
+        // Need to make sure SUT was deallocated from memory, need to run these assertions after the tests
+        addTeardownBlock { [weak instance] in
+            
+            // when every test finishes running then the tear down block is invoked
+            // here sut gets captured strongly, so it will never be nil so we need to introduce weak sut in this block
+            XCTAssertNil(instance, "Instance should have been deallocated, potential memory leak", file: file, line: line)
+        }
     }
 
     // when  we are subclassing URLSession and URLSessionDataTask, it is often dangerous as
