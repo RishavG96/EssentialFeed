@@ -8,10 +8,20 @@
 import XCTest
 import EssentialFeed
 
+// We introiduced these 2 new types for the sole purpose of testing. These are not abstractions but they are meant to be used by other clients. They are abstractions just for the tests.
+protocol HTTPSession {
+    // we ensured that production code has visibility to only this method and we only need to mock this method and we do not need to care about any other method
+    func dataTask(with url: URL, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> HTTPSessionTask
+}
+
+protocol HTTPSessionTask {
+    func resume()
+}
+
 class URLSessionHTTPClient {
-    private let session: URLSession
+    private let session: HTTPSession
     
-    init(session: URLSession) {
+    init(session: HTTPSession) {
         self.session = session
     }
     
@@ -40,7 +50,7 @@ class URLSessionHTTPClientTests: XCTestCase {
     func test_getFromURL_resumesDataTaskWithURL() {
         let url = URL(string: "http://any-url.com")!
         let task = URLSessionDataTaskSpy()
-        let session = URLSessionSpy()
+        let session = HTTPSessionSpy()
         session.stub(url: url, task: task)
         
         let sut = URLSessionHTTPClient(session: session)
@@ -52,7 +62,7 @@ class URLSessionHTTPClientTests: XCTestCase {
     func test_getFromURL_failsOnRequestError() {
         let url = URL(string: "http://any-url.com")!
         let error = NSError(domain: "any error", code: 1)
-        let session = URLSessionSpy()
+        let session = HTTPSessionSpy()
         session.stub(url: url, error: error)
         
         let exp = expectation(description: "wait for completion")
@@ -76,20 +86,20 @@ class URLSessionHTTPClientTests: XCTestCase {
     // when  we are subclassing URLSession and URLSessionDataTask, it is often dangerous as
     //  we do not own those classes, we do not have access to their implementations
     // if we start mocking classes we do not own we can start creating assumptions in our mocked behaviour that could be wrong.
-    private class URLSessionSpy: URLSession {
+    private class HTTPSessionSpy: HTTPSession {
         var receivedURLs = [URL]()
         private var stubs = [URL: Stub]()
         
         private struct Stub {
-            let task: URLSessionDataTask
+            let task: HTTPSessionTask
             let error: Error?
         }
         
-        func stub(url: URL, task: URLSessionDataTask = FakeURLSessionDataTask(), error: Error? = nil) {
+        func stub(url: URL, task: HTTPSessionTask = FakeURLSessionDataTask(), error: Error? = nil) {
             stubs[url] = Stub(task: task, error: error)
         }
         
-        override func dataTask(with url: URL, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask {
+        func dataTask(with url: URL, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> HTTPSessionTask {
             receivedURLs.append(url)
             // now this method returns a URLSessionDataTask but we never want to ever execute a network request during a test. We need some sort of mock implementation of that DataTask, like a fake URLSessionDataTask
             guard let stub = stubs[url] else {
@@ -100,14 +110,14 @@ class URLSessionHTTPClientTests: XCTestCase {
         }
     }
     
-    private class FakeURLSessionDataTask: URLSessionDataTask {
-        override func resume() { }
+    private class FakeURLSessionDataTask: HTTPSessionTask {
+        func resume() { }
     }
     
-    private class URLSessionDataTaskSpy: URLSessionDataTask {
+    private class URLSessionDataTaskSpy: HTTPSessionTask {
         var resumeCallCount: Int = 0
         
-        override func resume() {
+        func resume() {
             resumeCallCount += 1
         }
     }
