@@ -37,8 +37,17 @@ class URLSessionHTTPClient {
 
 class URLSessionHTTPClientTests: XCTestCase {
     
-    func test_getFromURL_performsGETRequestWithURL() {
+    override func setUp() {
+        super.setUp()
         URLProtocolStub.startInterceptingRequest()
+    }
+    
+    override class func tearDown() {
+        super.tearDown()
+        URLProtocolStub.stopInterceptingRequest()
+    }
+    
+    func test_getFromURL_performsGETRequestWithURL() {
         
         let url = URL(string: "http://any-url.com")!
         
@@ -49,10 +58,11 @@ class URLSessionHTTPClientTests: XCTestCase {
             exp.fulfill()
         }
         
+        // We can use the same mechanism to test post requests, also investigate the body of the request and also investigate query params of the request. Any request related data that we care about can be asserted through these observers without hitting the network.
+        
         URLSessionHTTPClient().get(from: url) { _ in }
         
         wait(for: [exp], timeout: 1.0)
-        URLProtocolStub.stopInterceptingRequest()
     }
 
     func test_getFromURL_createsDataTaskWithURL() {
@@ -79,7 +89,6 @@ class URLSessionHTTPClientTests: XCTestCase {
 //    }
     
     func test_getFromURL_failsOnRequestError() {
-        URLProtocolStub.startInterceptingRequest()
         let url = URL(string: "http://any-url.com")!
         let error = NSError(domain: "any error", code: 1)
         URLProtocolStub.stub(data: nil, response: nil, error: error)
@@ -99,7 +108,6 @@ class URLSessionHTTPClientTests: XCTestCase {
         }
         
         wait(for: [exp], timeout: 1.0)
-        URLProtocolStub.stopInterceptingRequest()
     }
     
     // MARK :- Helpers
