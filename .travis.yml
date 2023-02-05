@@ -1,0 +1,4 @@
+os: osx
+osx_image: xcode13.1
+language: swift
+script: xcodebuild clean build test -project ./EssentialFeed.xcodeproj -scheme "CI" CODE_SIGNING_ALLOWED=NO -destination 'platform=iOS Simulator,name=iPhone 13,OS=15.0'
