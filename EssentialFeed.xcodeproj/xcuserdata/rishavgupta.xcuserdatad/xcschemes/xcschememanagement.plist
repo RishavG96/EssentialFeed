@@ -9,6 +9,11 @@
 			<key>orderHint</key>
 			<integer>0</integer>
 		</dict>
+		<key>EssentialFeedAPIEndToEndTests.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>1</integer>
+		</dict>
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
@@ -23,6 +28,11 @@
 			<true/>
 		</dict>
 		<key>BD0349FF29650A9300E2EAEB</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>BDE5226F298F380F005ECE2D</key>
 		<dict>
 			<key>primary</key>
 			<true/>
